@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
 
         // Create polygon-shape for each box
         b2PolygonShape dynamicBox;
-        dynamicBox.SetAsBox(1.0f, 1.0f); // Adjusted size
+        dynamicBox.SetAsBox(0.8f, 0.8f); // Adjusted size
 
         // Set characteristics for each box
         b2FixtureDef fixtureDef;
@@ -141,9 +141,8 @@ int main(int argc, char* argv[])
 
     while (!close)
     {
-        SDL_Event event;
-
         // Handle SDL events
+        SDL_Event event;
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT)
@@ -152,49 +151,38 @@ int main(int argc, char* argv[])
             }
         }
 
+        // Step the Box2D world forward in time
         world.Step(timestep, veloIterations, posIterations);
-        b2Vec2 position = body->GetPosition();
-        float angle = body->GetAngle();
-        /* printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);*/
 
+        // Clear the renderer
         SDL_RenderClear(renderer);
 
+        // Render each box
         for (int i = 0; i < NUM_BOXES; ++i) {
-            // Get the position of the current box
             // Get the position and angle of the current box
             b2Vec2 position = boxes[i]->GetPosition();
             float angle = boxes[i]->GetAngle();
 
             // Convert Box2D position to SDL position using the scale factor
-            int pixelX = static_cast<int>(position.x * 20); // Convert meters to pixels
-            int pixelY = static_cast<int>(position.y * 20); // Convert meters to pixels
+            int pixelX = static_cast<int>(position.x * pixelsPerMeter);
+            int pixelY = static_cast<int>(position.y * pixelsPerMeter);
 
             // Set the destination rectangle for rendering the texture
             SDL_Rect dest;
-            dest.x = pixelX - 10; // Adjusting the position based on half the width of the texture (20 / 2)
-            dest.y = pixelY - 10; // Adjusting the position based on half the height of the texture (20 / 2)
-            dest.w = 30; // Set the width of the texture to match the Box2D object (1 meter)
-            dest.h = 30; // Set the height of the texture to match the Box2D object (1 meter)
+            dest.x = pixelX - 10; // Adjusting the position based on half the width of the texture
+            dest.y = pixelY - 10; // Adjusting the position based on half the height of the texture
+            dest.w = 30; // Set the width of the texture
+            dest.h = 30; // Set the height of the texture
 
             // Render the texture at the adjusted position and angle
             SDL_RenderCopyEx(renderer, tex, NULL, &dest, angle * (180.f / M_PI),
                 NULL, SDL_FLIP_NONE);
         }
 
-        /*dest.x = position.x;
-        dest.y = position.y;*/
-
-        // Render each box with the texture
-
-        /*SDL_RenderCopy(renderer, tex, NULL, &dest);*/
-         // Render the texture at the new position and angle
-        SDL_RenderCopyEx(renderer, tex, NULL, &the_box, angle * (180.f / M_PI),
-            NULL, SDL_FLIP_NONE);
-        // triggers the double buffers
-        // for multiple rendering
+        // Present the renderer
         SDL_RenderPresent(renderer);
 
-        // calculates to 60 fps
+        // Calculate to maintain 60 fps
         SDL_Delay(1000 / 60);
     }
 
