@@ -1,4 +1,3 @@
-
 #include <box2d.h>
 #include <SDL.h>
 
@@ -13,20 +12,12 @@
 #define WHEIGHT  (480)
 #define NUM_BOXES 200
 
-const int MET2PIX = 80;
-
-const int SCALED_WIDTH = WWIDTH / MET2PIX;
-const int SCALED_HEIGHT = WHEIGHT / MET2PIX;
-const float box_phys_half_size = 0.5f;  //box physics size..
-
 b2Body* boxes[NUM_BOXES];
 
-//TODO PELI MISSÄ PITÄÄ VÄISTELLÄ ILMASTA TIPPUVIA KUUTIOITA?
-//PITÄÄ VIELÄ LISÄTÄ JOTAIN MUUTA TARVITTAVAA
-//-sattumanvaraiset putoamspaikat
-//-grafiikka + fysiikka mittasuhteet kuntoon
-//ohjailtava palikka
-//multithread / pointterit / copyconstruktorit jotenkin mukaan?
+float pixelsPerMeter = 20.f;
+int pixelY, pixelX;
+
+SDL_Rect dest = { 0, 0, 20, 20 }; // Initialize dest with default values
 
 int main(int argc, char* argv[])
 {
@@ -36,19 +27,40 @@ int main(int argc, char* argv[])
     //greate world, with gravity
     b2World world(gravity);
 
-    //define a body for ground
+    //define a body
     b2BodyDef groundBodyDef;
-    groundBodyDef.position.Set(400.f, 400.f);
+    groundBodyDef.position.Set(WWIDTH / (2 * pixelsPerMeter), (WHEIGHT - 20) / pixelsPerMeter);
 
     //create a body (static, doesn't collide with other static bodies)
     b2Body* groundBody = world.CreateBody(&groundBodyDef);
 
     b2PolygonShape groundBox; //half-width, half-height params
-    groundBox.SetAsBox(400.f, 10.f);
+    groundBox.SetAsBox(WWIDTH / (2 * pixelsPerMeter), 10.f / pixelsPerMeter);
 
     groundBody->CreateFixture(&groundBox, 0.f);
 
-    
+    //Dynamic Body
+    b2BodyDef bodyDef;
+    bodyDef.type = b2_dynamicBody;
+    bodyDef.position.Set(400.f, 200.f);
+    b2Body* body = world.CreateBody(&bodyDef);
+
+    //boxi : 64x64 pix
+    //create polygon-shape for box
+    b2PolygonShape dynamicBox;
+    dynamicBox.SetAsBox(1.f, 1.f);
+
+    //set characteristics
+    b2FixtureDef fixtureDef;
+    fixtureDef.shape = &dynamicBox;
+    fixtureDef.density = 1.f;
+    fixtureDef.friction = 0.3f;
+    fixtureDef.restitution = 0.7f;
+
+
+
+    //create fixture
+    body->CreateFixture(&fixtureDef);
 
 
     //SIMULATING WORLD
@@ -79,41 +91,43 @@ int main(int argc, char* argv[])
     // clears main-memory
     SDL_FreeSurface(surface);
 
-    
+    SDL_Rect the_box;
 
- 
- 
+    // connects our texture with dest to control position
+    SDL_QueryTexture(tex, NULL, NULL, &the_box.w, &the_box.h);
 
+
+    // adjust height and width of our image box.
+   /*dest.w /= 20;
+    dest.h /= 20;*/
+
+    SDL_Rect ground;
+    SDL_QueryTexture(gtex, NULL, NULL, &ground.w, &ground.h);
+    // adjust height and width of our image box.
+    ground.w = WWIDTH;
+    ground.h = 20;
 
     // Render each box with the texture
     for (int i = 0; i < NUM_BOXES; ++i) {
-        SDL_Rect the_Box;
-        //Dynamic Body
-        b2BodyDef box_bodyDef;
-        box_bodyDef.type = b2_dynamicBody;
-        box_bodyDef.position.Set(100.f + i, 100.f -i * 7);
-        boxes[i] = world.CreateBody(&box_bodyDef);
+        // Set the position of each box
+        bodyDef.position.Set(10.0f + i, 10.0f - i * 7.0f);
 
-        //create polygon-shape for box
+        // Create a body for each box
+        boxes[i] = world.CreateBody(&bodyDef);
+
+        // Create polygon-shape for each box
         b2PolygonShape dynamicBox;
-        dynamicBox.SetAsBox(box_phys_half_size, box_phys_half_size);
+        dynamicBox.SetAsBox(1.0f, 1.0f); // Adjusted size
 
-        //set characteristics
+        // Set characteristics for each box
         b2FixtureDef fixtureDef;
         fixtureDef.shape = &dynamicBox;
-        fixtureDef.density = 1.f;
-        fixtureDef.friction = 0.9f;
-        fixtureDef.restitution = 0.1f;
+        fixtureDef.density = 1.0f;
+        fixtureDef.friction = 0.2f;
+        fixtureDef.restitution = 0.2f;
 
-        //create fixture
+        // Create fixture for each box
         boxes[i]->CreateFixture(&fixtureDef);
-
-        //the_Box.w = (int)box_phys_half_size * MET2PIX;
-        //the_Box.h = (int)box_phys_half_size * MET2PIX;
-
-        //// connects our texture with dest to control position
-        //SDL_QueryTexture(tex, NULL, NULL, &the_Box.w, &the_Box.h);
-
     }
 
 
@@ -139,25 +153,32 @@ int main(int argc, char* argv[])
         }
 
         world.Step(timestep, veloIterations, posIterations);
-        b2Vec2 position = box_body->GetPosition();
-        float angle = box_body->GetAngle();
-       /* printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);*/
+        b2Vec2 position = body->GetPosition();
+        float angle = body->GetAngle();
+        /* printf("%4.2f %4.2f %4.2f\n", position.x, position.y, angle);*/
 
         SDL_RenderClear(renderer);
 
         for (int i = 0; i < NUM_BOXES; ++i) {
             // Get the position of the current box
+            // Get the position and angle of the current box
             b2Vec2 position = boxes[i]->GetPosition();
+            float angle = boxes[i]->GetAngle();
+
+            // Convert Box2D position to SDL position using the scale factor
+            int pixelX = static_cast<int>(position.x * 20); // Convert meters to pixels
+            int pixelY = static_cast<int>(position.y * 20); // Convert meters to pixels
 
             // Set the destination rectangle for rendering the texture
-            
-            the_Box.x = position.x;
-            the_Box.y = position.y;
-            //the_Box.w = 20; // Adjust the width of the texture as needed
-            //the_Box.h = 20; // Adjust the height of the texture as needed
+            SDL_Rect dest;
+            dest.x = pixelX - 10; // Adjusting the position based on half the width of the texture (20 / 2)
+            dest.y = pixelY - 10; // Adjusting the position based on half the height of the texture (20 / 2)
+            dest.w = 30; // Set the width of the texture to match the Box2D object (1 meter)
+            dest.h = 30; // Set the height of the texture to match the Box2D object (1 meter)
 
-            // Render the texture at the box's position
-            SDL_RenderCopy(renderer, tex, NULL, &the_Box);
+            // Render the texture at the adjusted position and angle
+            SDL_RenderCopyEx(renderer, tex, NULL, &dest, angle * (180.f / M_PI),
+                NULL, SDL_FLIP_NONE);
         }
 
         /*dest.x = position.x;
@@ -167,7 +188,7 @@ int main(int argc, char* argv[])
 
         /*SDL_RenderCopy(renderer, tex, NULL, &dest);*/
          // Render the texture at the new position and angle
-        SDL_RenderCopyEx(renderer, tex, NULL, &the_Box, angle * (180.f / M_PI),
+        SDL_RenderCopyEx(renderer, tex, NULL, &the_box, angle * (180.f / M_PI),
             NULL, SDL_FLIP_NONE);
         // triggers the double buffers
         // for multiple rendering
