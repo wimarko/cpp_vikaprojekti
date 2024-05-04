@@ -42,4 +42,6 @@ box2d.lib(b2_chain_shape.obj) : warning LNK4099: PDB '' was not found with 'box2
 box2d.lib(b2_edge_shape.obj) : warning LNK4099: PDB '' was not found with 'box2d.lib(b2_edge_shape.obj)' or at ''; linking object as if no debug info
 box2d.lib(b2_collide_circle.obj) : warning LNK4099: PDB '' was not found with 'box2d.lib(b2_collide_circle.obj)' or at ''; linking object as if no debug info
 box2d.lib(b2_collide_polygon.obj) : warning LNK4099: PDB '' was not found with 'box2d.lib(b2_collide_polygon.obj)' or at ''; linking object as if no debug info
-  CPP_Miniprojekti.vcxproj -> D:\Documents\METROPOLIA\Cpp_jatkokurssi\CPP_Miniprojekti\x64\Debug\CPP_Miniprojekti.exe
+Source.obj : error LNK2019: unresolved external symbol "public: void __cdecl Game::Run(void)" (?Run@Game@@QEAAXXZ) referenced in function SDL_main
+Source.obj : error LNK2019: unresolved external symbol "private: void __cdecl Game::InitializeSDL(void)" (?InitializeSDL@Game@@AEAAXXZ) referenced in function "public: __cdecl Game::Game(void)" (??0Game@@QEAA@XZ)
+D:\Documents\METROPOLIA\Cpp_jatkokurssi\CPP_Miniprojekti\x64\Debug\CPP_Miniprojekti.exe : fatal error LNK1120: 2 unresolved externals

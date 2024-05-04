@@ -3,22 +3,26 @@
 
 #include <SDL_image.h>
 #include <SDL_timer.h>
+#include <SDL_render.h>
 
 #include<stdio.h>
 
+#include <memory>
+
 
 #define DEG_TO_RAD(X)	((X) * ((float)M_PI / 180.0f))
-#define WWIDTH  (860)
-#define WHEIGHT  (640)
+#define WWIDTH  (1280)
+#define WHEIGHT  (860)
 #define NUM_BOXES 200
 
 b2Body* boxes[NUM_BOXES];
 b2Body* playerBody = nullptr;
 
-float pixelsPerMeter = 20.f;
+const float pixelsPerMeter = 20.f;
 int pixelY, pixelX;
-float moveForce = 20.f;
-float jumpForce = 200.f;
+const float moveForce = 2000.f;
+const float jumpForce = 2000.f;
+const float playerMass = 20.f;
 
 SDL_Rect dest = { 0, 0, 20, 20 }; // Initialize dest with default values
 
@@ -42,6 +46,9 @@ int main(int argc, char* argv[])
 
     groundBody->CreateFixture(&groundBox, 0.f);
 
+
+
+
     // Define the player's body
     b2BodyDef playerDef;
     playerDef.type = b2_dynamicBody;
@@ -55,10 +62,10 @@ int main(int argc, char* argv[])
     // Set characteristics for the player
     b2FixtureDef playerFixtureDef;
     playerFixtureDef.shape = &playerBox;
-    playerFixtureDef.density = 1.f;
-    playerFixtureDef.friction = 0.2f;
-    playerFixtureDef.restitution = 0.1f; 
-        
+    playerFixtureDef.density = playerMass;
+    playerFixtureDef.friction = 0.75f;
+    playerFixtureDef.restitution = 0.1f;
+
 
     // Create fixture for the player
     playerBody->CreateFixture(&playerFixtureDef);
@@ -100,34 +107,66 @@ int main(int argc, char* argv[])
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         printf("error initializing SDL: %s\n", SDL_GetError());
     }
+
     SDL_Window* window = SDL_CreateWindow("Wiindow", // creates a window
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         WWIDTH, WHEIGHT, SDL_WINDOW_SHOWN);
+
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, 0);
+    std::shared_ptr<SDL_Renderer> rendererPtr(renderer, SDL_DestroyRenderer);
 
     SDL_Surface* surface;
     surface = IMG_Load("boxi.jpg");
 
     IMG_Load("player.jpg");
-    SDL_Surface* playerSurface = IMG_Load("player.jpg");
-    SDL_Texture* playerTexture =
-        SDL_CreateTextureFromSurface(renderer, playerSurface);
+
+    std::shared_ptr<SDL_Surface> playerSurface(IMG_Load("player.jpg"), SDL_FreeSurface);
+    if (playerSurface == nullptr) {
+        printf("error loading player image: %s\n", IMG_GetError());
+        SDL_DestroyRenderer(rendererPtr.get());
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return -1;
+    }
+
+    std::shared_ptr<SDL_Texture> playerTexture(SDL_CreateTextureFromSurface(rendererPtr.get(), playerSurface.get()), SDL_DestroyTexture);
+    if (playerTexture == nullptr) {
+        printf("error creating player texture: %s\n", SDL_GetError());
+        SDL_DestroyRenderer(rendererPtr.get());
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return -1;
+    }
 
     // loads image to our graphics hardware memory.
-    SDL_Texture* tex = SDL_CreateTextureFromSurface(renderer, surface);
-    SDL_Texture* gtex = SDL_CreateTextureFromSurface(renderer, surface);
+    std::shared_ptr<SDL_Texture> tex(SDL_CreateTextureFromSurface(rendererPtr.get(), surface), SDL_DestroyTexture);
+    if (tex == nullptr) {
+        printf("error creating texture: %s\n", SDL_GetError());
+        SDL_DestroyRenderer(rendererPtr.get());
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return -1;
+    }
+    std::shared_ptr<SDL_Texture> gtex(SDL_CreateTextureFromSurface(rendererPtr.get(), surface), SDL_DestroyTexture);
+    if (gtex == nullptr) {
+        printf("error creating ground texture: %s\n", SDL_GetError());
+        SDL_DestroyRenderer(rendererPtr.get());
+        SDL_DestroyWindow(window);
+        SDL_Quit();
+        return -1;
+    }
     // clears main-memory
     SDL_FreeSurface(surface);
 
     SDL_Rect the_box;
 
     // connects our texture with dest to control position
-    SDL_QueryTexture(tex, NULL, NULL, &the_box.w, &the_box.h);
+    SDL_QueryTexture(tex.get(), NULL, NULL, &the_box.w, &the_box.h);
 
 
     SDL_Rect ground;
-    SDL_QueryTexture(gtex, NULL, NULL, &ground.w, &ground.h);
+    SDL_QueryTexture(gtex.get(), NULL, NULL, &ground.w, &ground.h);
     // adjust height and width of our image box.
     ground.w = WWIDTH;
     ground.h = 20;
@@ -156,9 +195,9 @@ int main(int argc, char* argv[])
     }
 
 
-    SDL_RenderClear(renderer);
+    SDL_RenderClear(rendererPtr.get());
 
-    SDL_RenderPresent(renderer);
+    SDL_RenderPresent(rendererPtr.get());
 
     /*SDL_Delay(3000);*/
 
@@ -180,11 +219,11 @@ int main(int argc, char* argv[])
                 // Apply forces or impulses to the player based on key presses
                 /*switch (event.key.keysym.sym)
                 {*/
-                if (event.key.keysym.sym == SDLK_LEFT) 
+                if (event.key.keysym.sym == SDLK_LEFT)
                 {
                     printf("Left arrow key pressed\n");
                     playerBody->ApplyForceToCenter(b2Vec2(-moveForce, 0.0f), true);
-                }                    
+                }
                 if (event.key.keysym.sym == SDLK_RIGHT) {
                     printf("Right arrow key pressed\n");
                     playerBody->ApplyForceToCenter(b2Vec2(moveForce, 0.0f), true);
@@ -193,12 +232,12 @@ int main(int argc, char* argv[])
                     printf("Up arrow key pressed\n");
                     playerBody->ApplyForceToCenter(b2Vec2(0.0f, -jumpForce), true);
                 }
-                if(event.key.keysym.sym == SDLK_DOWN)
+                if (event.key.keysym.sym == SDLK_DOWN)
                 {
                     printf("Down arrow key pressed\n");
                     playerBody->ApplyForceToCenter(b2Vec2(0.0f, moveForce), true);
                 }
-                
+
             }
 
         }
@@ -207,7 +246,7 @@ int main(int argc, char* argv[])
         world.Step(timestep, veloIterations, posIterations);
 
         // Clear the renderer
-        SDL_RenderClear(renderer);
+        SDL_RenderClear(rendererPtr.get());
 
         // Render each box
         for (int i = 0; i < NUM_BOXES; ++i) {
@@ -227,7 +266,7 @@ int main(int argc, char* argv[])
             box_rect.h = 30; // Set the height of the texture
 
             // Render the texture at the adjusted position and angle
-            SDL_RenderCopyEx(renderer, tex, NULL, &box_rect, angle * (180.f / M_PI),
+            SDL_RenderCopyEx(rendererPtr.get(), tex.get(), NULL, &box_rect, angle * (180.f / M_PI),
                 NULL, SDL_FLIP_NONE);
         }
 
@@ -238,16 +277,16 @@ int main(int argc, char* argv[])
         float playerAngle = playerBody->GetAngle();
         int playerPixelX = static_cast<int>(playerPosition.x * pixelsPerMeter);
         int playerPixelY = static_cast<int>(playerPosition.y * pixelsPerMeter);
-        SDL_Rect playerRect = { 
-            playerPixelX - 10, 
+        SDL_Rect playerRect = {
+            playerPixelX - 10,
             playerPixelY - 10,
-            30, 30 
+            30, 30
         }; // Adjusting the position based on half the size of the player
-        SDL_RenderCopyEx(renderer, playerTexture, NULL, &playerRect, playerAngle * (180.f / M_PI), NULL, SDL_FLIP_NONE);
+        SDL_RenderCopyEx(rendererPtr.get(), playerTexture.get(), NULL, &playerRect, playerAngle* (180.f / M_PI), NULL, SDL_FLIP_NONE);
 
 
         // Present the renderer
-        SDL_RenderPresent(renderer);
+        SDL_RenderPresent(rendererPtr.get());
 
         // Calculate to maintain 60 fps
         SDL_Delay(1000 / 60);
