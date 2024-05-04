@@ -1,0 +1,4 @@
+﻿  Source.cpp
+D:\Documents\METROPOLIA\Cpp_jatkokurssi\CPP_Miniprojekti\CPP_Miniprojekti\Source.cpp(172,33): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+D:\Documents\METROPOLIA\Cpp_jatkokurssi\CPP_Miniprojekti\CPP_Miniprojekti\Source.cpp(173,33): warning C4244: '=': conversion from 'float' to 'int', possible loss of data
+  CPP_Miniprojekti.vcxproj -> D:\Documents\METROPOLIA\Cpp_jatkokurssi\CPP_Miniprojekti\x64\Debug\CPP_Miniprojekti.exe
