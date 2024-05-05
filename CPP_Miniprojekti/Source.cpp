@@ -10,7 +10,6 @@
 #include <memory>
 
 
-#define DEG_TO_RAD(X)	((X) * ((float)M_PI / 180.0f))
 #define WWIDTH  (1280)
 #define WHEIGHT  (860)
 #define NUM_BOXES 200
@@ -76,7 +75,6 @@ int main(int argc, char* argv[])
     bodyDef.position.Set(400.f, 200.f);
     b2Body* body = world.CreateBody(&bodyDef);
 
-    //boxi : 64x64 pix
     //create polygon-shape for box
     b2PolygonShape dynamicBox;
     dynamicBox.SetAsBox(1.f, 1.f);
@@ -122,40 +120,17 @@ int main(int argc, char* argv[])
     IMG_Load("player.jpg");
 
     std::shared_ptr<SDL_Surface> playerSurface(IMG_Load("player.jpg"), SDL_FreeSurface);
-    if (playerSurface == nullptr) {
-        printf("error loading player image: %s\n", IMG_GetError());
-        SDL_DestroyRenderer(rendererPtr.get());
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return -1;
-    }
+  
+    std::shared_ptr<SDL_Texture> playerTexture
+    (SDL_CreateTextureFromSurface(rendererPtr.get(), playerSurface.get()), SDL_DestroyTexture);
+ 
 
-    std::shared_ptr<SDL_Texture> playerTexture(SDL_CreateTextureFromSurface(rendererPtr.get(), playerSurface.get()), SDL_DestroyTexture);
-    if (playerTexture == nullptr) {
-        printf("error creating player texture: %s\n", SDL_GetError());
-        SDL_DestroyRenderer(rendererPtr.get());
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return -1;
-    }
-
-    // loads image to our graphics hardware memory.
-    std::shared_ptr<SDL_Texture> tex(SDL_CreateTextureFromSurface(rendererPtr.get(), surface), SDL_DestroyTexture);
-    if (tex == nullptr) {
-        printf("error creating texture: %s\n", SDL_GetError());
-        SDL_DestroyRenderer(rendererPtr.get());
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return -1;
-    }
-    std::shared_ptr<SDL_Texture> gtex(SDL_CreateTextureFromSurface(rendererPtr.get(), surface), SDL_DestroyTexture);
-    if (gtex == nullptr) {
-        printf("error creating ground texture: %s\n", SDL_GetError());
-        SDL_DestroyRenderer(rendererPtr.get());
-        SDL_DestroyWindow(window);
-        SDL_Quit();
-        return -1;
-    }
+    std::shared_ptr<SDL_Texture> tex(
+        SDL_CreateTextureFromSurface(rendererPtr.get(), surface), SDL_DestroyTexture);
+  
+    std::shared_ptr<SDL_Texture> gtex(
+        SDL_CreateTextureFromSurface(rendererPtr.get(), surface), SDL_DestroyTexture);
+ 
     // clears main-memory
     SDL_FreeSurface(surface);
 
@@ -184,14 +159,14 @@ int main(int argc, char* argv[])
         dynamicBox.SetAsBox(0.8f, 0.8f); // Adjusted size
 
         // Set characteristics for each box
-        b2FixtureDef fixtureDef;
-        fixtureDef.shape = &dynamicBox;
-        fixtureDef.density = 1.0f;
-        fixtureDef.friction = 0.2f;
-        fixtureDef.restitution = 0.2f;
+        b2FixtureDef fixtureDefBox;
+        fixtureDefBox.shape = &dynamicBox;
+        fixtureDefBox.density = 1.0f;
+        fixtureDefBox.friction = 0.2f;
+        fixtureDefBox.restitution = 0.2f;
 
         // Create fixture for each box
-        boxes[i]->CreateFixture(&fixtureDef);
+        boxes[i]->CreateFixture(&fixtureDefBox);
     }
 
 
