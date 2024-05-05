@@ -8,13 +8,15 @@
 #include<stdio.h>
 
 #include <memory>
+#include <vector>
+#undef main
 
 
 #define WWIDTH  (1280)
 #define WHEIGHT  (860)
-#define NUM_BOXES 200
-
-b2Body* boxes[NUM_BOXES];
+const int NUM_BOXES = 200;
+//
+//std::vector<b2Body*> boxes;
 b2Body* playerBody = nullptr;
 
 const float pixelsPerMeter = 20.f;
@@ -23,9 +25,13 @@ const float moveForce = 2000.f;
 const float jumpForce = 2000.f;
 const float playerMass = 20.f;
 
+
 SDL_Rect dest = { 0, 0, 20, 20 }; // Initialize dest with default values
 
-int main(int argc, char* argv[])
+//Spawn a group of boxes
+std::vector<b2Body*> SpawnBoxes( b2World& world,const int amount);
+
+int main()
 {
     //create gravity
     b2Vec2 gravity(0.f, 9.2f);
@@ -146,28 +152,9 @@ int main(int argc, char* argv[])
     ground.w = WWIDTH;
     ground.h = 20;
 
-    // Render each box with the texture
-    for (int i = 0; i < NUM_BOXES; ++i) {
-        // Set the position of each box
-        bodyDef.position.Set(10.0f, 10.0f - i * 7.0f);
+    
+    std::vector<b2Body*> boxes = SpawnBoxes(world, NUM_BOXES);
 
-        // Create a body for each box
-        boxes[i] = world.CreateBody(&bodyDef);
-
-        // Create polygon-shape for each box
-        b2PolygonShape dynamicBox;
-        dynamicBox.SetAsBox(0.8f, 0.8f); // Adjusted size
-
-        // Set characteristics for each box
-        b2FixtureDef fixtureDefBox;
-        fixtureDefBox.shape = &dynamicBox;
-        fixtureDefBox.density = 1.0f;
-        fixtureDefBox.friction = 0.2f;
-        fixtureDefBox.restitution = 0.2f;
-
-        // Create fixture for each box
-        boxes[i]->CreateFixture(&fixtureDefBox);
-    }
 
 
     SDL_RenderClear(rendererPtr.get());
@@ -268,4 +255,41 @@ int main(int argc, char* argv[])
     }
 
     return 0;
+}
+
+std::vector<b2Body*> SpawnBoxes(b2World& world, const int amount)
+
+{   //ei n‰in, nullpointtereita, ja vasta sitten lis‰‰ b2Bodyt per‰‰n
+    //std::vector<b2Body*> boxVector(amount); 
+
+    std::vector<b2Body*> boxVector;
+
+    b2BodyDef bodyDef;
+    bodyDef.type = b2_dynamicBody;
+
+    // Render each box with the texture
+    for (int i = 0; i < amount; ++i) {
+        // Set the position of each box
+        bodyDef.position.Set(10.0f, 10.0f - i * 7.0f);
+
+        // Create a body for each box
+        b2Body* boxBody = world.CreateBody(&bodyDef);
+        boxVector.push_back(boxBody);
+
+        // Create polygon-shape for each box
+        b2PolygonShape dynamicBox;
+        dynamicBox.SetAsBox(0.8f, 0.8f); // Adjusted size
+
+        // Set characteristics for each box
+        b2FixtureDef fixtureDefBox;
+        fixtureDefBox.shape = &dynamicBox;
+        fixtureDefBox.density = 1.0f;
+        fixtureDefBox.friction = 0.2f;
+        fixtureDefBox.restitution = 0.2f;
+
+        // Create fixture for each box
+        boxBody->CreateFixture(&fixtureDefBox);
+    }
+
+    return boxVector;
 }

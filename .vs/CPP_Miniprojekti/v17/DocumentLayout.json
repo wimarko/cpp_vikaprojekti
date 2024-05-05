@@ -1,0 +1,37 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\METROPOLIA\\2024\\CPP-Ohjelmoinnin_Jatkokurssi_TX00CR53-3009\\CPP_KOODIT\\vikaprojekti\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{483BE2F4-5BD8-431F-B4FD-A083357AEE61}|CPP_Miniprojekti\\CPP_Miniprojekti.vcxproj|D:\\METROPOLIA\\2024\\CPP-Ohjelmoinnin_Jatkokurssi_TX00CR53-3009\\CPP_KOODIT\\vikaprojekti\\CPP_Miniprojekti\\Source.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{483BE2F4-5BD8-431F-B4FD-A083357AEE61}|CPP_Miniprojekti\\CPP_Miniprojekti.vcxproj|solutionrelative:CPP_Miniprojekti\\Source.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 279,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Source.cpp",
+              "DocumentMoniker": "D:\\METROPOLIA\\2024\\CPP-Ohjelmoinnin_Jatkokurssi_TX00CR53-3009\\CPP_KOODIT\\vikaprojekti\\CPP_Miniprojekti\\Source.cpp",
+              "RelativeDocumentMoniker": "CPP_Miniprojekti\\Source.cpp",
+              "ToolTip": "D:\\METROPOLIA\\2024\\CPP-Ohjelmoinnin_Jatkokurssi_TX00CR53-3009\\CPP_KOODIT\\vikaprojekti\\CPP_Miniprojekti\\Source.cpp",
+              "RelativeToolTip": "CPP_Miniprojekti\\Source.cpp",
+              "ViewState": "AQIAAPgAAAAAAAAAAAAgwAgBAAAiAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2024-05-05T06:16:30.524Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
